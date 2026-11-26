@@ -1,0 +1,22 @@
+# Generated portable build (node tools/build-standalone.mjs)
+/gridlock.html
+
+# Source audio sits at the root; the copies the site uses live in assets/music
+/*.mp3
+
+# Local tool logs
+/logs/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Logs and local scratch
+*.log
+node_modules/
