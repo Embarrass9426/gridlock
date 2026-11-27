@@ -572,6 +572,13 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
 .cell.lit{animation:litWave 240ms linear var(--lit-delay,0ms) 1}
 @keyframes litWave{0%,100%{filter:brightness(1)}40%{filter:brightness(1.45)}}
 
+.cell.drifted{animation:driftCellFlash 520ms var(--ease-out)}
+@keyframes driftCellFlash{
+  0%{filter:brightness(1)}
+  22%{filter:brightness(1.85)}
+  100%{filter:brightness(1)}
+}
+
 .grid.enter .cell{animation:cellIn 120ms var(--ease-pop) both;animation-delay:var(--d,0ms)}
 @keyframes cellIn{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
 
@@ -644,6 +651,11 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
 .log-item .li-d i{font-style:normal;color:var(--faint);font-size:10px}
 .log-item .li-d b{font-weight:400;color:var(--heat);text-shadow:0 0 4px var(--heat), 0 0 12px color-mix(in srgb, var(--heat) 60%, transparent)}
 .log-item.win .li-d b{color:var(--accent)}
+.log-item.drifted{animation:driftLogFlash 520ms var(--ease-out)}
+@keyframes driftLogFlash{
+  0%,100%{background:transparent}
+  22%{background:color-mix(in srgb, var(--heat) 16%, transparent)}
+}
 @keyframes logIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 .log-empty{
   padding:26px 12px;text-align:center;font-size:9px;letter-spacing:.12em;color:var(--faint);

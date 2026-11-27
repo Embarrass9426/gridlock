@@ -126,6 +126,7 @@ var I18N = {
     tempCold: 'cold',
     annReveal: '{c} revealed. Distance {d}. {n} tries remaining.',
     annRepeat: 'Cell {c} already revealed. Distance {d}.',
+    annDrift: 'Signal drift. The target moved; all readings updated.',
     annWin: 'Target found. {c}.'
   },
   zh: {
@@ -188,6 +189,7 @@ var I18N = {
     tempCold: '很遠',
     annReveal: '{c} 已取樣。距離 {d}。剩餘 {n} 次。',
     annRepeat: '格子 {c} 已取樣，距離 {d}。',
+    annDrift: '訊號漂移。目標已移動，所有讀數已更新。',
     annWin: '找到目標 {c}。'
   }
 };
@@ -520,6 +522,10 @@ var Sfx = (function(){
     },
     select: function(){
       tone({ type:'square', f0:440, f1:520, dur:38, gain:.025, attack:2, bus:uiBus });
+    },
+    drift: function(){
+      tone({ type:'triangle', f0:740, f1:370, dur:140, gain:.022, attack:2, bus:uiBus });
+      tone({ type:'square', f0:185, dur:80, gain:.012, attack:2, delay:25, bus:uiBus });
     },
     modeSelect: function(){
       tone({ type:'square', f0:330, dur:55, gain:.045, attack:2, bus:uiBus });
@@ -1323,6 +1329,7 @@ function addLog(d, x, y, isWin){
 
   var li = document.createElement('li');
   li.className = 'log-item' + (isWin ? ' win' : '');
+  li.setAttribute('data-guess', String(state.history.length));
   li.style.setProperty('--heat', heatFor(d, state.cols, state.rows));
   li.innerHTML =
     '<span class="li-idx">' + pad2(state.history.length) + '</span>' +
@@ -1475,9 +1482,62 @@ function driftTeleport(){
   }
 
   if(options.length){
+    var changed = options.filter(function(p){
+      var ks = Object.keys(state.revealed);
+      for(var i = 0; i < ks.length; i++){
+        var parts = ks[i].split(',');
+        var gx = +parts[0], gy = +parts[1];
+        if(Math.abs(p.x - gx) + Math.abs(p.y - gy) === state.revealed[ks[i]]) return false;
+      }
+      return true;
+    });
+    if(changed.length) options = changed;
+  }
+
+  if(options.length){
     var pick = options[randInt(options.length)];
     state.target = { x: pick.x, y: pick.y };
   }
+}
+
+function updateDriftCell(btn, d){
+  btn.style.setProperty('--heat', heatFor(d, state.cols, state.rows));
+
+  var num = btn.querySelector('.num');
+  if(num){
+    num.setAttribute('data-len', String(d).length);
+    num.innerHTML = digitsSVG(String(d));
+    num.classList.remove('pop');
+    void num.offsetWidth;
+    num.classList.add('pop');
+  }
+
+  btn.classList.remove('drifted');
+  void btn.offsetWidth;
+  btn.classList.add('drifted');
+}
+
+function refreshDriftReadings(){
+  state.history.forEach(function(h, i){
+    var nd = Math.abs(h.x - state.target.x) + Math.abs(h.y - state.target.y);
+    h.d = nd;
+    state.revealed[key(h.x, h.y)] = nd;
+
+    var btn = cellAt(h.x, h.y);
+    if(btn) updateDriftCell(btn, nd);
+
+    var li = logList.querySelector('.log-item[data-guess="' + (i + 1) + '"]');
+    if(li){
+      li.style.setProperty('--heat', heatFor(nd, state.cols, state.rows));
+      var b = li.querySelector('.li-d b');
+      if(b) b.textContent = pad2(nd);
+      li.classList.remove('drifted');
+      void li.offsetWidth;
+      li.classList.add('drifted');
+    }
+  });
+
+  refreshCellLabels();
 }
 
 function commitGuess(x, y){
@@ -1505,10 +1565,17 @@ function commitGuess(x, y){
     return;
   }
 
-  resolveDistance(btn, x, y, d);
+  var willDrift = m.drift && state.history.length > 1 && state.triesLeft > 0;
+  resolveDistance(btn, x, y, d, willDrift ? 540 : 220);
 
-  if(m.drift && state.history.length > 1 && state.triesLeft > 0){
-    driftTeleport();
+  if(willDrift){
+    later(300, function(){
+      if(state.phase !== 'play' || state.mode !== m || state.triesLeft <= 0) return;
+      driftTeleport();
+      refreshDriftReadings();
+      Sfx.drift();
+      announce(t('annDrift'));
+    });
   }
 
   if(state.triesLeft <= 0){
@@ -1528,7 +1595,7 @@ function commitGuess(x, y){
   }
 }
 
-function resolveDistance(btn, x, y, d){
+function resolveDistance(btn, x, y, d, lockDelay){
   var heat = heatFor(d, state.cols, state.rows);
   var band = heatBand(d, state.cols, state.rows);
 
@@ -1551,7 +1618,7 @@ function resolveDistance(btn, x, y, d){
     announce(fmt(t('annReveal'), { c: coordLabel(x, y), d: d, n: state.triesLeft }));
   });
 
-  later(220, releaseLock);
+  later(lockDelay || 220, releaseLock);
 }
 
 function releaseLock(){
