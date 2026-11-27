@@ -1868,7 +1868,19 @@ function pickDriftDestination(options){
       best.push(p);
     }
   }
-  return best[randInt(best.length)];
+
+  var anchor = best[randInt(best.length)];
+  var size = 5, half = 2;
+  var x0 = Math.max(0, Math.min(anchor.x - half, state.cols - size));
+  var y0 = Math.max(0, Math.min(anchor.y - half, state.rows - size));
+  var x1 = Math.min(state.cols - 1, x0 + size - 1);
+  var y1 = Math.min(state.rows - 1, y0 + size - 1);
+  var box = [];
+  for(var k = 0; k < options.length; k++){
+    var q = options[k];
+    if(q.x >= x0 && q.x <= x1 && q.y >= y0 && q.y <= y1) box.push(q);
+  }
+  return box.length ? box[randInt(box.length)] : anchor;
 }
 
 function driftTeleport(){
