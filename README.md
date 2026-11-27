@@ -24,10 +24,10 @@ No framework, no bundler, no npm install. `index.html`, `styles.css`, and `game.
 
 | Mode | Grid | Tries | Colour |
 | --- | --- | --- | --- |
-| EASY | 5 × 5 | 8 | green |
-| NORMAL | 7 × 7 | 7 | blue |
-| HARD | 9 × 9 | 6 | red |
-| EXTREME | 11 × 11 | 5 | purple |
+| EASY | 5 × 5 | 7 | green |
+| NORMAL | 7 × 7 | 6 | blue |
+| HARD | 9 × 9 | 5 | red |
+| EXTREME | 11 × 11 | 4 | purple |
 
 Best score per mode is kept in `localStorage`.
 

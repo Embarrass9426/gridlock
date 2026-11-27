@@ -68,13 +68,26 @@
           <div class="status-left">
             <span class="label" data-i18n="triesLeft">TRIES LEFT</span>
             <span class="tries-line">
-              <span class="big-num" id="triesNum" aria-live="off">8</span>
+              <span class="big-num" id="triesNum" aria-live="off">7</span>
               <span class="pips" id="pips" aria-hidden="true"></span>
             </span>
           </div>
           <div class="status-right">
             <span class="label" data-i18n="best">BEST</span>
             <span class="best-num" id="bestNum">—</span>
+          </div>
+        </div>
+
+        <div class="drift-meter" id="driftMeter" hidden>
+          <div class="drift-line">
+            <span class="drift-key" id="driftTimeLabel" data-i18n="timeLabel">TIME</span>
+            <span class="drift-track drift-time-track" id="driftTimeTrack" role="progressbar" aria-labelledby="driftTimeLabel" aria-valuemin="0" aria-valuemax="90" aria-valuenow="90"></span>
+            <span class="drift-num drift-time" id="driftTime">90</span>
+          </div>
+          <div class="drift-line drift-next">
+            <span class="drift-key" data-i18n="driftLabel">DRIFT</span>
+            <span class="drift-track drift-signal-track" id="driftSignalTrack" aria-hidden="true"></span>
+            <span class="drift-num drift-warn" id="driftWarn" aria-hidden="true"></span>
           </div>
         </div>
 
@@ -105,9 +118,11 @@
 <!-- ================= BOSS INTRO ================= -->
 <div class="boss-veil" id="bossVeil" hidden aria-hidden="true">
   <div class="boss-veil-inner">
-    <span class="boss-veil-eyebrow" data-i18n="driftEyebrow">UNKNOWN SIGNAL</span>
+    <span class="boss-veil-eyebrow" id="bossEyebrow" data-i18n="driftEyebrow">THE LATTICE IS BREAKING</span>
     <strong class="boss-veil-title" data-i18n="driftTitle">DRIFT</strong>
-    <span class="boss-veil-rule" data-i18n="driftRule">THE TARGET MOVES AFTER EACH PROBE</span>
+    <p class="boss-veil-story" id="bossStory" hidden><span id="bossStoryText"></span><span class="boss-cursor" id="bossCursor" hidden aria-hidden="true"></span></p>
+    <span class="boss-veil-rule" data-i18n="driftRule">IT MOVES EVERY 5–10 SECONDS</span>
+    <span class="boss-veil-skip" id="bossSkip" data-i18n="driftSkip">CLICK TO SKIP</span>
   </div>
 </div>
 

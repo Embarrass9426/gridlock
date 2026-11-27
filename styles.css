@@ -409,6 +409,23 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
 .status-right{text-align:right}
 .best-num{font-size:18px;font-variant-numeric:tabular-nums;color:var(--accent);text-shadow:0 0 12px var(--accent-glow)}
 
+.drift-meter{width:100%;max-width:620px;margin:-2px auto 12px;display:grid;gap:5px}
+.drift-line{display:flex;align-items:center;gap:10px;min-width:0}
+.drift-key{width:42px;flex:0 0 42px;font-size:8px;letter-spacing:.18em;color:var(--faint)}
+.drift-track{display:flex;flex:1 1 auto;gap:2px;min-width:0}
+.drift-seg{flex:1 1 0;height:10px;background:#0A0E15;box-shadow:inset 0 0 0 1px var(--line);transition:background-color 120ms linear,box-shadow 120ms linear}
+.drift-seg.on{background:var(--accent);box-shadow:0 0 6px var(--accent-glow),inset 0 0 0 1px color-mix(in srgb,var(--accent) 60%,transparent)}
+.drift-seg.off{background:#0A0E15}
+.drift-line.drift-next .drift-seg{height:6px}
+.drift-num{width:34px;flex:0 0 34px;text-align:right;font-size:16px;line-height:1;color:var(--text);font-variant-numeric:tabular-nums;text-shadow:0 0 10px var(--accent-glow)}
+.drift-warn{color:var(--faint);font-size:12px}
+.drift-meter.danger .drift-time-track .drift-seg.on{background:var(--danger);box-shadow:0 0 8px rgba(255,77,109,.55)}
+.drift-meter.danger .drift-time{color:var(--danger);text-shadow:0 0 12px rgba(255,77,109,.5)}
+.drift-meter.incoming .drift-key{color:var(--danger);text-shadow:0 0 10px rgba(255,77,109,.4)}
+.drift-meter.moved .drift-key{color:var(--accent);text-shadow:0 0 12px var(--accent-glow)}
+.drift-signal-track.danger .drift-seg.on:nth-last-child(-n+2){background:var(--danger);box-shadow:0 0 8px rgba(255,77,109,.6)}
+.drift-warn.danger{color:var(--danger);text-shadow:0 0 10px rgba(255,77,109,.5);animation:driftWarnPulse 420ms steps(2,end) infinite}
+
 .board-shell{
   width:100%;max-width:620px;margin:0 auto;position:relative;
   filter:
@@ -700,6 +717,31 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
   display:block;margin-top:22px;
   font-size:10px;letter-spacing:.2em;color:var(--muted);
 }
+.boss-veil.story{opacity:1;pointer-events:auto;animation:none}
+.boss-veil.story .boss-veil-inner{max-height:88vh;overflow-y:auto;padding:0 2px}
+.boss-veil.story .boss-veil-title{font-size:clamp(36px, 10vw, 86px)}
+.boss-veil-story{
+  margin:22px auto 0;max-width:620px;text-align:left;white-space:pre-wrap;
+  font-size:clamp(10px, 2.6vw, 13px);line-height:1.95;letter-spacing:.02em;
+  color:var(--text);min-height:10em;
+}
+.boss-veil-story[hidden]{display:none}
+.boss-cursor{
+  display:inline-block;width:.55em;height:1em;margin-left:2px;
+  background:var(--accent);box-shadow:0 0 10px var(--accent-glow);
+  vertical-align:-.14em;animation:driftCursor 1s steps(2,end) infinite;
+}
+.boss-cursor[hidden]{display:none}
+@keyframes driftCursor{0%,49%{opacity:1}50%,100%{opacity:0}}
+.boss-veil-skip{
+  display:block;margin-top:18px;font-size:9px;letter-spacing:.22em;
+  color:var(--faint);animation:driftHint 1.8s ease-in-out infinite;
+}
+.boss-veil-skip.ready{color:var(--accent);text-shadow:0 0 12px var(--accent-glow)}
+@keyframes driftHint{0%,100%{opacity:.45}50%{opacity:1}}
+.boss-veil.closing{animation:bossClose .42s ease-in forwards;pointer-events:none}
+@keyframes bossClose{from{opacity:1}to{opacity:0}}
+@keyframes driftWarnPulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes bossVeil{
   0%{opacity:0}
   14%{opacity:1}
@@ -868,6 +910,11 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
   .head-actions .btn{min-height:44px}
   .big-num{font-size:26px}
   .status-row{min-height:48px;margin-bottom:8px}
+  .drift-meter{margin-bottom:8px;gap:4px}
+  .drift-key{width:34px;flex-basis:34px;font-size:7px}
+  .drift-num{width:28px;flex-basis:28px;font-size:14px}
+  .drift-seg{height:8px}
+  .drift-line.drift-next .drift-seg{height:5px}
   .log-head{height:38px;font-size:9px}
   .log-item{height:36px;font-size:11px}
   .ov-title{font-size:22px}

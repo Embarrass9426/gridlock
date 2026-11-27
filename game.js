@@ -54,11 +54,11 @@ try {
    1. data
    ============================================================ */
 var MODES = {
-  easy:    { id:'easy',    name:'EASY',    cols:5,  rows:5,  tries:8, accent:'#39FF88', dim:'#17633D', glow:'rgba(57,255,136,.55)' },
-  normal:  { id:'normal',  name:'NORMAL',  cols:7,  rows:7,  tries:7, accent:'#38BDF8', dim:'#175A78', glow:'rgba(56,189,248,.55)' },
-  hard:    { id:'hard',    name:'HARD',    cols:9,  rows:9,  tries:6, accent:'#FF4D6D', dim:'#7E293D', glow:'rgba(255,77,109,.55)' },
-  extreme: { id:'extreme', name:'EXTREME', cols:11, rows:11, tries:5, accent:'#C084FC', dim:'#5D3B82', glow:'rgba(192,132,252,.55)' },
-  drift:   { id:'drift',   name:'DRIFT',   cols:13, rows:13, tries:6, accent:'#E7E3F2', dim:'#5A5668', glow:'rgba(231,227,242,.55)', drift:true }
+  easy:    { id:'easy',    name:'EASY',    cols:5,  rows:5,  tries:7, accent:'#39FF88', dim:'#17633D', glow:'rgba(57,255,136,.55)' },
+  normal:  { id:'normal',  name:'NORMAL',  cols:7,  rows:7,  tries:6, accent:'#38BDF8', dim:'#175A78', glow:'rgba(56,189,248,.55)' },
+  hard:    { id:'hard',    name:'HARD',    cols:9,  rows:9,  tries:5, accent:'#FF4D6D', dim:'#7E293D', glow:'rgba(255,77,109,.55)' },
+  extreme: { id:'extreme', name:'EXTREME', cols:11, rows:11, tries:4, accent:'#C084FC', dim:'#5D3B82', glow:'rgba(192,132,252,.55)' },
+  drift:   { id:'drift',   name:'DRIFT',   cols:13, rows:13, tries:10, time:90, accent:'#E7E3F2', dim:'#5A5668', glow:'rgba(231,227,242,.55)', drift:true }
 };
 var MODE_ORDER = ['easy','normal','hard','extreme'];
 var DRIFT_ID = 'drift';
@@ -112,10 +112,39 @@ var I18N = {
     'mode.extreme': 'EXTREME',
     'mode.drift': 'DRIFT',
     driftLocked: 'SIGNAL LOCKED',
-    driftEyebrow: 'UNKNOWN SIGNAL',
+    driftEyebrow: 'THE LATTICE IS BREAKING',
+    driftEyebrowRetry: 'THE DRIFTER RETURNS',
     driftTitle: 'DRIFT',
-    driftRule: 'THE TARGET MOVES AFTER EACH PROBE',
+    driftRule: 'IT MOVES EVERY 5–10 SECONDS',
     driftUnlocked: 'SIGNAL UNLOCKED',
+    driftStory:
+      'Before the first map, there was the Lattice.\n' +
+      'A cage of numbers, raised to hold the thing that would not die.\n' +
+      'They called it the Drifter.\n' +
+      'It has no body. Only a distance.\n\n' +
+      'Last night, the ninth seal broke.\n' +
+      'Every 5 to 10 seconds, it tears itself to another cell.\n\n' +
+      'The old kingdom is going dark, one city at a time.\n' +
+      'You are the last hunter of the Lattice.\n' +
+      'Read the distances. Corner the ghost.\n' +
+      'You have 90 seconds and 10 samples.\n' +
+      'Do not let it leave the grid.',
+    driftSkip: 'CLICK TO SKIP',
+    driftBegin: 'CLICK TO BEGIN',
+    driftHow: 'The Drifter moves every 5 to 10 seconds. Every reading updates. You have 90 seconds and 10 tries. Press Enter to begin.',
+    driftSoon: 'The Drifter is about to move.',
+    timeLabel: 'TIME',
+    driftLabel: 'DRIFT',
+    secondsLeft: '{s} seconds remaining',
+    winSubDrift: '<span class="hl">{u}</span> TRIES USED  ·  <span class="hl-w">{s}</span>s LEFT  ·  BEST <span class="hl-w">{b}</span>',
+    driftWinEyebrow: 'THE LATTICE HOLDS',
+    driftWinTitle: 'DRIFTER CAUGHT',
+    timeEyebrow: 'TIME EXPIRED',
+    timeTitle: 'THE DRIFTER ESCAPED',
+    timeSub: 'THE GHOST WAS AT <span class="hl-c">{c}</span>',
+    triesEyebrow: 'TRIES EXPIRED',
+    triesTitle: 'THE DRIFTER ESCAPED',
+    driftLoseSub: 'THE GHOST WAS AT <span class="hl-c">{c}</span>',
     sampleHint: 'SAMPLE {c} — TAP AGAIN TO GUESS',
     ariaUnrevealed: 'Row {y}, column {x}, unrevealed',
     ariaRevealed: 'Row {y}, column {x}, distance {d}, {t}',
@@ -175,10 +204,39 @@ var I18N = {
     'mode.extreme': '極限',
     'mode.drift': '漂移',
     driftLocked: '訊號未解鎖',
-    driftEyebrow: '未知訊號',
+    driftEyebrow: '方格牢籠正在崩解',
+    driftEyebrowRetry: '漂移者歸來',
     driftTitle: '漂移',
-    driftRule: '每次取樣後目標會轉移',
+    driftRule: '每隔 5–10 秒移動',
     driftUnlocked: '訊號解鎖',
+    driftStory:
+      '在第一張地圖之前，方格牢籠就已存在。\n' +
+      '那是以數字砌成的囚籠，用來困住不願死去的東西。\n' +
+      '他們叫它「漂移者」。\n' +
+      '它沒有形體，只有一段距離。\n\n' +
+      '昨夜，第九道封印裂開了。\n' +
+      '每隔 5 到 10 秒，它就會撕開空間，滑到另一格。\n\n' +
+      '古老的王國正一座座陷入黑暗。\n' +
+      '你是方格牢籠最後的獵人。\n' +
+      '讀出距離。困住鬼魂。\n' +
+      '你有 90 秒和 10 次取樣。\n' +
+      '別讓它離開方格。',
+    driftSkip: '點擊跳過',
+    driftBegin: '點擊開始',
+    driftHow: '漂移者每隔 5 到 10 秒移動一次。每次移動，所有讀數都會更新。你有 90 秒和 10 次機會。按 Enter 開始。',
+    driftSoon: '漂移者即將移動。',
+    timeLabel: '時間',
+    driftLabel: '漂移',
+    secondsLeft: '剩餘 {s} 秒',
+    winSubDrift: '使用 <span class="hl">{u}</span> 次  ·  剩餘 <span class="hl-w">{s}</span> 秒  ·  最佳 <span class="hl-w">{b}</span>',
+    driftWinEyebrow: '方格牢籠穩固',
+    driftWinTitle: '鬼魂已困',
+    timeEyebrow: '時間耗盡',
+    timeTitle: '漂移者逃脫',
+    timeSub: '鬼魂最後在 <span class="hl-c">{c}</span>',
+    triesEyebrow: '次數耗盡',
+    triesTitle: '漂移者逃脫',
+    driftLoseSub: '鬼魂最後在 <span class="hl-c">{c}</span>',
     sampleHint: '取樣 {c} — 再點一次確認',
     ariaUnrevealed: '第 {y} 列，第 {x} 欄，未取樣',
     ariaRevealed: '第 {y} 列，第 {x} 欄，距離 {d}，{t}',
@@ -526,6 +584,20 @@ var Sfx = (function(){
     drift: function(){
       tone({ type:'triangle', f0:740, f1:370, dur:140, gain:.022, attack:2, bus:uiBus });
       tone({ type:'square', f0:185, dur:80, gain:.012, attack:2, delay:25, bus:uiBus });
+    },
+    driftSoon: function(){
+      tone({ type:'square', f0:880, dur:44, gain:.018, attack:2, bus:uiBus });
+      tone({ type:'square', f0:660, dur:62, gain:.014, attack:2, delay:70, bus:uiBus });
+    },
+    type: function(){
+      tone({ type:'square', f0:1380, f1:1230, dur:13, gain:.005, attack:1, bus:uiBus });
+    },
+    storyLine: function(){
+      tone({ type:'triangle', f0:210, f1:150, dur:110, gain:.008, attack:2, bus:uiBus });
+    },
+    storyOpen: function(){
+      noise({ dur:260, gain:.009, filter:{ type:'bandpass', freq:880, q:.7 } });
+      tone({ type:'triangle', f0:98, f1:73, dur:320, gain:.012, attack:4, bus:uiBus });
     },
     modeSelect: function(){
       tone({ type:'square', f0:330, dur:55, gain:.045, attack:2, bus:uiBus });
@@ -938,6 +1010,16 @@ var bgmVolEl = $('#bgmVol');
 var sfxValEl = $('#sfxVal');
 var bgmValEl = $('#bgmVal');
 var bossVeil = $('#bossVeil');
+var bossEyebrow = $('#bossEyebrow');
+var bossStory = $('#bossStory');
+var bossStoryText = $('#bossStoryText');
+var bossCursor = $('#bossCursor');
+var bossSkip = $('#bossSkip');
+var driftMeter = $('#driftMeter');
+var driftTimeTrack = $('#driftTimeTrack');
+var driftSignalTrack = $('#driftSignalTrack');
+var driftTimeEl = $('#driftTime');
+var driftWarnEl = $('#driftWarn');
 
 /* ============================================================
    7. state
@@ -946,8 +1028,8 @@ var state = {
   mode: MODES.easy,
   cols: 5,
   rows: 5,
-  tries: 8,
-  triesLeft: 8,
+  tries: 7,
+  triesLeft: 7,
   target: { x: 0, y: 0 },
   revealed: {},
   history: [],
@@ -960,6 +1042,32 @@ var state = {
 };
 var cells = [];
 
+var DRIFT_MOVE_MIN = 5000;
+var DRIFT_MOVE_MAX = 10000;
+var DRIFT_TIME_SEGS = 30;
+var DRIFT_SIGNAL_SEGS = 10;
+var driftClock = {
+  running: false,
+  paused: false,
+  deadline: 0,
+  lastMoveAt: 0,
+  nextMoveAt: 0,
+  timeLeft: 0,
+  resultTimeLeft: 0,
+  pausedAt: 0,
+  pauses: {},
+  token: 0,
+  warned: false
+};
+var driftStory = {
+  active: false,
+  typing: false,
+  paused: false,
+  text: '',
+  i: 0,
+  token: 0
+};
+
 /* ============================================================
    8. screen + menu
    ============================================================ */
@@ -967,12 +1075,300 @@ function showScreen(name){
   screenMenu.classList.toggle('active', name === 'menu');
   screenGame.classList.toggle('active', name === 'game');
   if(name === 'menu'){
+    stopDriftClock();
+    stopDriftStory();
     clearTimers();
     FX.clearAll();
     if(bossVeil){ bossVeil.hidden = true; bossVeil.classList.remove('run'); }
     buildMenu();
     Bgm.play('menu');
     if(state.driftUnlockPending) later(320, playDriftUnlock);
+  }
+}
+
+/* ============================================================
+   8b. drift clock + story
+   ============================================================ */
+function driftMoveDelay(){
+  return DRIFT_MOVE_MIN + Math.random() * (DRIFT_MOVE_MAX - DRIFT_MOVE_MIN);
+}
+
+function buildDriftMeter(){
+  if(!driftTimeTrack || driftTimeTrack.childElementCount) return;
+  var i;
+  for(i = 0; i < DRIFT_TIME_SEGS; i++){
+    var s = document.createElement('i');
+    s.className = 'drift-seg';
+    driftTimeTrack.appendChild(s);
+  }
+  for(i = 0; i < DRIFT_SIGNAL_SEGS; i++){
+    var q = document.createElement('i');
+    q.className = 'drift-seg';
+    driftSignalTrack.appendChild(q);
+  }
+}
+
+function setDriftSegments(track, on){
+  if(!track) return;
+  var segs = track.children;
+  for(var i = 0; i < segs.length; i++){
+    segs[i].className = 'drift-seg ' + (i < on ? 'on' : 'off');
+  }
+}
+
+function renderDriftClock(ms){
+  if(!driftTimeEl || !driftTimeTrack) return;
+  var sec = Math.max(0, Math.ceil(ms / 1000));
+  driftTimeEl.textContent = pad2(sec);
+  var per = MODES[DRIFT_ID].time / DRIFT_TIME_SEGS;
+  setDriftSegments(driftTimeTrack, Math.ceil(sec / per));
+  driftMeter.classList.toggle('danger', sec <= 15);
+  driftTimeTrack.setAttribute('aria-valuenow', String(sec));
+  driftTimeTrack.setAttribute('aria-valuetext', fmt(t('secondsLeft'), { s: sec }));
+}
+
+function renderDriftSignal(now){
+  if(!driftSignalTrack) return;
+  var span = Math.max(1, driftClock.nextMoveAt - driftClock.lastMoveAt);
+  var remain = Math.max(0, driftClock.nextMoveAt - now);
+  var frac = Math.max(0, Math.min(1, 1 - remain / span));
+  setDriftSegments(driftSignalTrack, Math.ceil(frac * DRIFT_SIGNAL_SEGS));
+  var incoming = remain <= 3000;
+  driftSignalTrack.classList.toggle('danger', incoming);
+  driftMeter.classList.toggle('incoming', incoming);
+  driftWarnEl.classList.toggle('danger', incoming);
+  driftWarnEl.textContent = remain > 0 ? String(Math.ceil(remain / 1000)) : '';
+}
+
+function driftTick(token){
+  if(token !== driftClock.token) return;
+  if(!driftClock.running || driftClock.paused) return;
+  if(state.phase !== 'play' || state.mode.id !== DRIFT_ID) return;
+  if(!screenGame.classList.contains('active')) return;
+
+  var now = Date.now();
+  var left = driftClock.deadline - now;
+  driftClock.timeLeft = Math.max(0, left);
+  renderDriftClock(driftClock.timeLeft);
+  renderDriftSignal(now);
+
+  if(left <= 0){
+    loseByTime();
+    return;
+  }
+
+  if(!driftClock.warned && driftClock.nextMoveAt - now <= 3000){
+    driftClock.warned = true;
+    Sfx.driftSoon();
+    announce(t('driftSoon'));
+  }
+
+  if(now >= driftClock.nextMoveAt && !state.lock){
+    moveDriftGhost(now);
+  }
+
+  later(100, function(){ driftTick(token); });
+}
+
+function moveDriftGhost(now){
+  if(state.phase !== 'play' || state.mode.id !== DRIFT_ID) return;
+  driftTeleport();
+  refreshDriftReadings();
+  driftClock.lastMoveAt = now;
+  driftClock.nextMoveAt = now + driftMoveDelay();
+  driftClock.warned = false;
+  renderDriftSignal(now);
+  Sfx.drift();
+  announce(t('annDrift'));
+  driftMeter.classList.remove('moved');
+  void driftMeter.offsetWidth;
+  driftMeter.classList.add('moved');
+  later(520, function(){ driftMeter.classList.remove('moved'); });
+}
+
+function startDriftClock(){
+  buildDriftMeter();
+  driftClock.running = true;
+  driftClock.paused = false;
+  driftClock.token++;
+  var now = Date.now();
+  driftClock.deadline = now + MODES[DRIFT_ID].time * 1000;
+  driftClock.lastMoveAt = now;
+  driftClock.nextMoveAt = now + driftMoveDelay();
+  driftClock.timeLeft = MODES[DRIFT_ID].time * 1000;
+  driftClock.resultTimeLeft = 0;
+  driftClock.pausedAt = 0;
+  driftClock.pauses = {};
+  driftClock.warned = false;
+  driftMeter.hidden = false;
+  driftMeter.classList.remove('danger', 'incoming', 'moved');
+  renderDriftClock(driftClock.timeLeft);
+  renderDriftSignal(now);
+  driftTick(driftClock.token);
+}
+
+function pauseDriftClock(reason){
+  if(!driftClock.running) return;
+  driftClock.pauses[reason || 'ui'] = true;
+  if(driftClock.paused) return;
+  driftClock.paused = true;
+  driftClock.pausedAt = Date.now();
+  driftClock.token++;
+}
+
+function resumeDriftClock(reason){
+  if(!driftClock.running) return;
+  if(reason) delete driftClock.pauses[reason];
+  for(var k in driftClock.pauses){
+    if(driftClock.pauses[k]) return;
+  }
+  if(!driftClock.paused) return;
+  var now = Date.now();
+  var delta = now - driftClock.pausedAt;
+  driftClock.deadline += delta;
+  driftClock.nextMoveAt += delta;
+  driftClock.pausedAt = 0;
+  driftClock.paused = false;
+  driftClock.token++;
+  driftTick(driftClock.token);
+}
+
+function stopDriftClock(){
+  driftClock.running = false;
+  driftClock.paused = false;
+  driftClock.pauses = {};
+  driftClock.token++;
+  driftClock.pausedAt = 0;
+  if(driftMeter){
+    driftMeter.hidden = true;
+    driftMeter.classList.remove('danger', 'incoming', 'moved');
+  }
+  if(driftWarnEl) driftWarnEl.textContent = '';
+}
+
+function loseByTime(){
+  if(state.phase !== 'play' || state.mode.id !== DRIFT_ID) return;
+  driftClock.timeLeft = 0;
+  stopDriftClock();
+  state.phase = 'lose';
+  state.lock = true;
+  later(40, function(){ Sfx.lose(); });
+  if(!reduceMotion){
+    glitchBoard();
+    shakeBoard(220);
+  }
+  later(180, function(){ markTarget(); });
+  later(700, function(){ finishLose('time'); });
+}
+
+function completeDriftStory(){
+  driftStory.typing = false;
+  if(bossStoryText) bossStoryText.textContent = driftStory.text;
+  if(bossCursor) bossCursor.hidden = true;
+  if(bossSkip){
+    bossSkip.textContent = t('driftBegin');
+    bossSkip.classList.add('ready');
+  }
+}
+
+function startDriftIntro(m){
+  var seen = !!store.get('driftStorySeen', false);
+  driftStory.active = true;
+  driftStory.typing = false;
+  driftStory.paused = false;
+  driftStory.text = seen ? '' : t('driftStory');
+  driftStory.i = 0;
+  driftStory.token++;
+
+  bossEyebrow.textContent = t(seen ? 'driftEyebrowRetry' : 'driftEyebrow');
+  bossStory.hidden = seen;
+  bossStoryText.textContent = '';
+  bossCursor.hidden = true;
+  bossSkip.textContent = t(seen ? 'driftBegin' : 'driftSkip');
+  bossSkip.classList.toggle('ready', seen);
+
+  bossVeil.hidden = false;
+  bossVeil.classList.remove('run', 'closing');
+  bossVeil.classList.add('story');
+  void bossVeil.offsetWidth;
+
+  if(!seen){
+    Sfx.storyOpen();
+    if(reduceMotion){
+      completeDriftStory();
+    } else {
+      driftStory.typing = true;
+      bossCursor.hidden = false;
+      driftStoryTick(driftStory.token);
+    }
+  } else {
+    completeDriftStory();
+  }
+
+  announce(t('driftHow'));
+}
+
+function driftStoryTick(token){
+  if(token !== driftStory.token) return;
+  if(!driftStory.active || driftStory.paused || !driftStory.typing) return;
+  if(document.hidden){
+    driftStory.paused = true;
+    return;
+  }
+  if(driftStory.i >= driftStory.text.length){
+    completeDriftStory();
+    return;
+  }
+
+  var ch = driftStory.text.charAt(driftStory.i++);
+  bossStoryText.textContent += ch;
+
+  if(ch === '\n'){
+    Sfx.storyLine();
+  } else if(ch !== ' ' && driftStory.i % 2 === 0){
+    Sfx.type();
+  }
+
+  later(ch === '\n' ? 140 : 22, function(){ driftStoryTick(token); });
+}
+
+function skipOrBeginDriftStory(){
+  if(!driftStory.active) return;
+  Sfx.select();
+  if(driftStory.typing){
+    completeDriftStory();
+    return;
+  }
+  beginDriftRun();
+}
+
+function beginDriftRun(){
+  if(state.phase !== 'intro' || !state.mode.drift) return;
+  driftStory.active = false;
+  driftStory.typing = false;
+  driftStory.token++;
+  store.set('driftStorySeen', true);
+
+  bossVeil.classList.add('closing');
+  bossVeil.classList.remove('story');
+
+  later(430, function(){
+    bossVeil.hidden = true;
+    bossVeil.classList.remove('closing');
+    if(state.phase !== 'intro' || !state.mode.drift) return;
+    state.phase = 'play';
+    state.lock = false;
+    startDriftClock();
+  });
+}
+
+function stopDriftStory(){
+  driftStory.active = false;
+  driftStory.typing = false;
+  driftStory.token++;
+  if(bossVeil){
+    bossVeil.classList.remove('story', 'closing', 'run');
+    bossVeil.hidden = true;
   }
 }
 
@@ -1011,12 +1407,12 @@ function buildDriftCard(wrap){
       announce(t('driftLocked'));
     });
   } else {
-    var best = store.get('best.' + DRIFT_ID, null);
+    var best = bestFor(DRIFT_ID, m.tries);
     b.innerHTML =
       '<span class="mc-top"><span class="mc-name">' + t('mode.' + DRIFT_ID) + '</span>' +
       '<span class="mc-idx">05</span></span>' +
       '<span class="mc-meta"><span>' + m.cols + ' × ' + m.rows + ' ' + t('grid') + '</span>' +
-      '<span>' + m.tries + ' ' + t('tries') + '</span></span>' +
+      '<span>' + m.tries + ' ' + t('tries') + ' · ' + m.time + 's</span></span>' +
       '<span class="mc-best">' + t('best') + ' <b>' + (best == null ? '—' : pad2(best)) + '</b></span>';
     b.addEventListener('click', function(){
       Sfx.unlock(); Sfx.modeSelect();
@@ -1058,7 +1454,7 @@ function buildMenu(){
   wrap.innerHTML = '';
   MODE_ORDER.forEach(function(id, i){
     var m = MODES[id];
-    var best = store.get('best.' + id, null);
+    var best = bestFor(id, m.tries);
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'mode-card clip-lg mode-card-' + id;
@@ -1085,14 +1481,14 @@ function refreshMenuBests(){
   MODE_ORDER.forEach(function(id){
     var card = $('.mode-card-' + id);
     if(!card) return;
-    var best = store.get('best.' + id, null);
+    var best = bestFor(id, MODES[id].tries);
     var el = card.querySelector('.mc-best b');
     if(el) el.textContent = best == null ? '—' : pad2(best);
   });
 
   var driftCard = $('.mode-card-drift');
   if(driftCard && !driftCard.classList.contains('is-locked')){
-    var driftBest = store.get('best.' + DRIFT_ID, null);
+    var driftBest = bestFor(DRIFT_ID, MODES[DRIFT_ID].tries);
     var driftEl = driftCard.querySelector('.mc-best b');
     if(driftEl) driftEl.textContent = driftBest == null ? '—' : pad2(driftBest);
   }
@@ -1156,8 +1552,10 @@ function startGame(modeId){
   if(modeId === DRIFT_ID && !store.get('driftUnlocked', false)) return;
 
   clearTimers();
+  stopDriftClock();
+  stopDriftStory();
   FX.clearAll();
-  if(bossVeil){ bossVeil.hidden = true; bossVeil.classList.remove('run'); }
+  if(driftMeter) driftMeter.hidden = true;
 
   var m = MODES[modeId] || MODES.easy;
   state.mode = m;
@@ -1205,24 +1603,7 @@ function startGame(modeId){
   later(700, function(){ grid.classList.remove('enter'); });
 
   if(m.drift){
-    if(reduceMotion){
-      state.phase = 'play';
-      state.lock = false;
-      announce(t('driftRule'));
-    } else {
-      bossVeil.hidden = false;
-      bossVeil.classList.remove('run');
-      void bossVeil.offsetWidth;
-      bossVeil.classList.add('run');
-      announce(t('driftRule'));
-      later(1500, function(){
-        if(state.mode !== m || state.phase !== 'intro') return;
-        state.phase = 'play';
-        state.lock = false;
-        bossVeil.classList.remove('run');
-        bossVeil.hidden = true;
-      });
-    }
+    startDriftIntro(m);
   }
 }
 
@@ -1314,8 +1695,13 @@ function renderTries(pulse){
   }
 }
 
+function bestFor(id, tries){
+  var b = store.get('best.' + id, null);
+  return (b != null && b <= tries) ? b : null;
+}
+
 function renderBest(){
-  var b = store.get('best.' + state.mode.id, null);
+  var b = bestFor(state.mode.id, state.tries);
   bestNum.textContent = b == null ? '—' : pad2(b);
 }
 
@@ -1565,20 +1951,10 @@ function commitGuess(x, y){
     return;
   }
 
-  var willDrift = m.drift && state.history.length > 1 && state.triesLeft > 0;
-  resolveDistance(btn, x, y, d, willDrift ? 540 : 220);
-
-  if(willDrift){
-    later(300, function(){
-      if(state.phase !== 'play' || state.mode !== m || state.triesLeft <= 0) return;
-      driftTeleport();
-      refreshDriftReadings();
-      Sfx.drift();
-      announce(t('annDrift'));
-    });
-  }
+  resolveDistance(btn, x, y, d);
 
   if(state.triesLeft <= 0){
+    if(m.drift) stopDriftClock();
     state.phase = 'lose';
     later(120, function(){
       if(!reduceMotion){
@@ -1591,7 +1967,7 @@ function commitGuess(x, y){
       if(btn) FX.shatter(cellRect(btn), heatFor(d, state.cols, state.rows));
     });
     later(480, function(){ markTarget(); });
-    later(860, function(){ finishLose(); });
+    later(860, function(){ finishLose('tries'); });
   }
 }
 
@@ -1667,6 +2043,12 @@ function paintCell(btn, x, y, d, isWin){
 function resolveWin(btn, x, y){
   state.phase = 'win';
 
+  if(state.mode.drift){
+    driftClock.timeLeft = Math.max(0, driftClock.deadline - Date.now());
+    driftClock.resultTimeLeft = Math.ceil(driftClock.timeLeft / 1000);
+    stopDriftClock();
+  }
+
   later(40, function(){ Sfx.win(); });
 
   later(60, function(){
@@ -1733,14 +2115,15 @@ function finishWin(){
   showResult('win', {
     used: used,
     best: store.get('best.' + m.id, null),
-    isBest: isBest
+    isBest: isBest,
+    timeLeft: driftClock.resultTimeLeft
   });
 
   if(isBest) later(160, function(){ Sfx.best(); });
 }
 
-function finishLose(){
-  showResult('lose', {});
+function finishLose(reason){
+  showResult('lose', { reason: reason || 'tries' });
 }
 
 function showResult(kind, data){
@@ -1752,15 +2135,31 @@ function showResult(kind, data){
   Bgm.duck(true);
 
   if(kind === 'win'){
-    ovEyebrow.textContent = t('winEyebrow');
-    ovTitle.textContent = t('winTitle');
-    ovSub.innerHTML = fmt(t('winSub'), { u: data.used, b: pad2(data.best) });
+    var driftWin = state.mode.drift;
+    ovEyebrow.textContent = t(driftWin ? 'driftWinEyebrow' : 'winEyebrow');
+    ovTitle.textContent = t(driftWin ? 'driftWinTitle' : 'winTitle');
+    ovSub.innerHTML = driftWin
+      ? fmt(t('winSubDrift'), { u: data.used, s: data.timeLeft || 0, b: pad2(data.best) })
+      : fmt(t('winSub'), { u: data.used, b: pad2(data.best) });
     ovBest.hidden = !data.isBest;
     ovPrimary.textContent = t('playAgain');
   } else {
-    ovEyebrow.textContent = t('loseEyebrow');
-    ovTitle.textContent = t('loseTitle');
-    ovSub.innerHTML = fmt(t('loseSub'), { c: coordLabel(state.target.x, state.target.y) });
+    var driftLose = state.mode.drift;
+    var reason = data.reason || 'tries';
+    var c = coordLabel(state.target.x, state.target.y);
+    if(driftLose && reason === 'time'){
+      ovEyebrow.textContent = t('timeEyebrow');
+      ovTitle.textContent = t('timeTitle');
+      ovSub.innerHTML = fmt(t('timeSub'), { c: c });
+    } else if(driftLose){
+      ovEyebrow.textContent = t('triesEyebrow');
+      ovTitle.textContent = t('triesTitle');
+      ovSub.innerHTML = fmt(t('driftLoseSub'), { c: c });
+    } else {
+      ovEyebrow.textContent = t('loseEyebrow');
+      ovTitle.textContent = t('loseTitle');
+      ovSub.innerHTML = fmt(t('loseSub'), { c: c });
+    }
     ovBest.hidden = true;
     ovPrimary.textContent = t('tryAgain');
   }
@@ -1835,6 +2234,12 @@ grid.addEventListener('keydown', function(e){
 });
 
 document.addEventListener('keydown', function(e){
+  if(state.phase === 'intro' && state.mode.drift &&
+    (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape')){
+    e.preventDefault();
+    skipOrBeginDriftStory();
+    return;
+  }
   if(e.key === 'm' || e.key === 'M'){
     if(e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
     toggleSound();
@@ -1959,10 +2364,10 @@ var INFO = {
       title: 'CREDITS',
       html:
         '<p><strong class="hl">GRIDLOCK</strong> — a pixel-neon deduction game.</p>' +
-        '<p class="credits-line">DESIGN &amp; CODE · one self-contained HTML file<br>' +
+        '<p class="credits-line">DESIGN &amp; CODE · HTML + CSS + JS<br>' +
         'UI / MOTION / VFX CONSULTATION · <b class="hl-p">Kimi K3.1 Pro</b><br>' +
         'TYPE · Silkscreen · Ark Pixel 12px (OFL) · Noto Sans TC<br>' +
-        'AUDIO · synthesized live with the Web Audio API — no sound files<br>' +
+        'AUDIO · synthesized SFX · streamed music from assets/music<br>' +
         'PIXELS · 5×7 bitmap glyphs drawn as inline SVG</p>' +
         '<p>No images, no frameworks, no build step. <b class="hl">Works offline.</b></p>'
     }
@@ -1993,10 +2398,10 @@ var INFO = {
       title: '製作名單',
       html:
         '<p><strong class="hl">GRIDLOCK</strong> —— 像素霓虹推理遊戲。</p>' +
-        '<p class="credits-line">設計與程式 · 單一 HTML 檔案<br>' +
+        '<p class="credits-line">設計與程式 · HTML + CSS + JS<br>' +
         'UI／動態／特效顧問 · <b class="hl-p">Kimi K3.1 Pro</b><br>' +
         '字體 · Silkscreen · Ark Pixel · Noto Sans TC<br>' +
-        '音效 · 以 Web Audio API 即時合成，無音檔<br>' +
+        '音效 · Web Audio 即時合成 · 音樂串流自 assets/music<br>' +
         '像素 · 5×7 點陣字形，以內嵌 SVG 繪製</p>' +
         '<p>沒有圖片、沒有框架、不需建置。<b class="hl">離線也能玩。</b></p>'
     }
@@ -2047,12 +2452,14 @@ function openAudio(){
   audioOverlay.hidden = false;
   void audioOverlay.offsetWidth;
   audioOverlay.classList.add('show');
+  pauseDriftClock('audio');
   later(40, function(){ audioClose.focus({ preventScroll: true }); });
 }
 
 function closeAudio(){
   audioOverlay.classList.remove('show');
   audioOverlay.hidden = true;
+  resumeDriftClock('audio');
 }
 
 /* ============================================================
@@ -2096,6 +2503,10 @@ $('#creditsBtn').addEventListener('click', function(){ openInfo('credits'); });
 infoClose.addEventListener('click', closeInfo);
 infoOverlay.addEventListener('click', function(e){
   if(e.target === infoOverlay) closeInfo();
+});
+
+bossVeil.addEventListener('click', function(){
+  if(driftStory.active) skipOrBeginDriftStory();
 });
 
 $('#restartBtn').addEventListener('click', function(){
@@ -2145,9 +2556,16 @@ document.addEventListener('visibilitychange', function(){
   if(document.hidden){
     Sfx.suspend();
     Bgm.pause();
+    if(driftStory.active && driftStory.typing) driftStory.paused = true;
+    pauseDriftClock('hidden');
   } else {
     Sfx.resume();
     Bgm.resume();
+    if(driftStory.active && driftStory.paused && driftStory.typing){
+      driftStory.paused = false;
+      driftStoryTick(driftStory.token);
+    }
+    resumeDriftClock('hidden');
   }
 });
 
@@ -2168,6 +2586,7 @@ if(store.get('driftUnlocked', false) && !store.get('driftUnlockSeen', false)){
 }
 applyLang();
 renderLogEmpty();
+buildDriftMeter();
 paintMixer();
 FX.resize();
 measureGrid();
