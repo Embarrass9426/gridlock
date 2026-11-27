@@ -1042,8 +1042,8 @@ var state = {
 };
 var cells = [];
 
-var DRIFT_MOVE_MIN = 5000;
-var DRIFT_MOVE_MAX = 10000;
+var DRIFT_MOVE_MIN = 5;
+var DRIFT_MOVE_MAX = 10;
 var DRIFT_TIME_SEGS = 30;
 var driftClock = {
   running: false,
@@ -1090,7 +1090,7 @@ function showScreen(name){
    8b. drift clock + story
    ============================================================ */
 function driftMoveDelay(){
-  return DRIFT_MOVE_MIN + Math.random() * (DRIFT_MOVE_MAX - DRIFT_MOVE_MIN);
+  return (DRIFT_MOVE_MIN + randInt(DRIFT_MOVE_MAX - DRIFT_MOVE_MIN + 1)) * 1000;
 }
 
 function buildDriftMeter(){
@@ -1844,6 +1844,33 @@ function reject(x, y){
 /* ============================================================
    12. guess resolution
    ============================================================ */
+function pickDriftDestination(options){
+  if(!options.length) return null;
+  var keys = Object.keys(state.revealed);
+  if(!keys.length) return options[randInt(options.length)];
+
+  var bestScore = -1, bestSum = -1, best = [];
+  for(var i = 0; i < options.length; i++){
+    var p = options[i];
+    var minD = Infinity, sumD = 0;
+    for(var j = 0; j < keys.length; j++){
+      var parts = keys[j].split(',');
+      var gx = +parts[0], gy = +parts[1];
+      var d = Math.abs(p.x - gx) + Math.abs(p.y - gy);
+      if(d < minD) minD = d;
+      sumD += d;
+    }
+    if(minD > bestScore || (minD === bestScore && sumD > bestSum)){
+      bestScore = minD;
+      bestSum = sumD;
+      best = [p];
+    } else if(minD === bestScore && sumD === bestSum){
+      best.push(p);
+    }
+  }
+  return best[randInt(best.length)];
+}
+
 function driftTeleport(){
   var blocked = {};
   Object.keys(state.revealed).forEach(function(k){
@@ -1892,8 +1919,8 @@ function driftTeleport(){
     if(changed.length) options = changed;
   }
 
-  if(options.length){
-    var pick = options[randInt(options.length)];
+  var pick = pickDriftDestination(options);
+  if(pick){
     state.target = { x: pick.x, y: pick.y };
   }
 }
