@@ -22,4 +22,6 @@ GRIDLOCK is a single-file browser game with no package manager, dependencies, bu
 - Schedule deferred/VFX work with `later()`, not bare `setTimeout`: it is tracked and `clearTimers()` cancels it on restart and screen changes. Honor `reduceMotion` in new effects.
 - Grid cells are `<button>` elements with a roving `tabIndex`; keep them real buttons and preserve focus/keyboard behavior.
 - Touch uses a deliberate two-tap precision rule (`needsPrecision()`: coarse pointer and cells under 28px). The first tap selects, the second guesses; it is not a broken double-click.
+- Background music is normalized to roughly -16 LUFS integrated (true peaks around -1.4 dBTP or lower). Match that if replacing tracks, and keep the files at 192 kbps.
+- BGM volume goes through a Web Audio `GainNode`, not `HTMLMediaElement.volume`: iOS ignores volume writes on media elements. Keep the `file://` fallback, where some browsers silence `MediaElementSource` for local files.
 - Adding a mode requires coordinated edits to `MODES`, `MODE_ORDER`, both `mode.<id>` i18n keys, `window.__BGM_DATA`, the build script's `tracks` array, and a new `assets/music/<id>.mp3`.

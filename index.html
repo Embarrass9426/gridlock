@@ -352,32 +352,43 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
 
 .board-shell{
   width:100%;max-width:620px;margin:0 auto;position:relative;
-  filter:drop-shadow(0 0 6px var(--accent-fire)) drop-shadow(0 0 16px var(--accent-fire)) drop-shadow(0 0 40px var(--accent-glow)) drop-shadow(0 0 80px var(--accent-glow));
+  filter:
+    drop-shadow(0 0 1px rgba(255,255,255,.95))
+    drop-shadow(0 0 5px var(--accent))
+    drop-shadow(0 0 14px var(--accent-fire))
+    drop-shadow(0 0 28px var(--accent-glow));
 }
 .board-bloom{
-  position:absolute;inset:-8%;z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse at 50% 50%,
-    color-mix(in srgb, var(--accent) 62%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 30%, transparent) 38%,
-    transparent 72%);
-  filter:blur(26px);
+  position:absolute;inset:-3px;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(90deg, transparent 0%, var(--accent) 12%, #fff 50%, var(--accent) 88%, transparent 100%) 50% 0/100% 2px no-repeat,
+    linear-gradient(90deg, transparent 0%, var(--accent) 12%, #fff 50%, var(--accent) 88%, transparent 100%) 50% 100%/100% 2px no-repeat,
+    linear-gradient(180deg, transparent 0%, var(--accent) 12%, #fff 50%, var(--accent) 88%, transparent 100%) 0 50%/2px 100% no-repeat,
+    linear-gradient(180deg, transparent 0%, var(--accent) 12%, #fff 50%, var(--accent) 88%, transparent 100%) 100% 50%/2px 100% no-repeat,
+    radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--accent) 20%, transparent) 0%, transparent 66%) 0 0/100% 100% no-repeat;
+  filter:blur(2.5px) saturate(1.2);
   opacity:1;
-  animation:bloomPulse 5.4s ease-in-out infinite;
+  animation:neonStrip 3.4s ease-in-out infinite;
 }
-@keyframes bloomPulse{
-  0%,100%{opacity:.78;transform:scale(.985)}
-  50%{opacity:1;transform:scale(1.02)}
+@keyframes neonStrip{
+  0%,100%{opacity:.88;filter:blur(2.5px) saturate(1.15) brightness(1.02)}
+  50%{opacity:1;filter:blur(3.5px) saturate(1.3) brightness(1.18)}
 }
 .board-frame{
-  background:linear-gradient(180deg, var(--accent-dim), var(--line) 42%, var(--line));
+  background:linear-gradient(180deg,
+    color-mix(in srgb, var(--accent) 45%, #fff) 0%,
+    var(--accent) 20%,
+    var(--accent-dim) 62%,
+    var(--line) 100%);
   padding:4px;
   position:relative;
   z-index:1;
 }
 .board-well{
   background:var(--bg1);
-  background:color-mix(in srgb, var(--accent) 9%, var(--bg1));
-  background-image:radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 70%);
+  background:color-mix(in srgb, var(--accent) 11%, var(--bg1));
+  background-image:radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--accent) 19%, transparent) 0%, transparent 72%);
+  box-shadow:inset 0 0 26px color-mix(in srgb, var(--accent) 12%, transparent);
   padding:var(--pad);
 }
 .board-stage{position:relative}
@@ -662,9 +673,9 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
 .mix-val{font-size:11px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 .mix-slider{
   -webkit-appearance:none;appearance:none;
-  width:100%;height:20px;background:transparent;cursor:pointer;
+  width:100%;height:32px;background:transparent;cursor:pointer;
   --fill:100%;
-  touch-action:manipulation;
+  touch-action:pan-y;
 }
 .mix-slider::-webkit-slider-runnable-track{
   height:8px;
@@ -747,6 +758,9 @@ strong.hl,b.hl,strong.hl-g,b.hl-g,strong.hl-b,b.hl-b,strong.hl-c,b.hl-c,strong.h
   .log-head{height:38px;font-size:9px}
   .log-item{height:36px;font-size:11px}
   .ov-title{font-size:22px}
+  .mix-slider{height:44px}
+  .mix-slider::-webkit-slider-thumb{width:20px;height:30px;margin-top:-11px}
+  .mix-slider::-moz-range-thumb{width:20px;height:30px}
 }
 @media (max-width:379px){
   .mode-grid{grid-template-columns:1fr}
@@ -1466,17 +1480,38 @@ var Sfx = (function(){
    ============================================================ */
 var Bgm = (function(){
   var el = null;
+  var ctx = null, gain = null, source = null;
   var muted = !!store.get('bgmMute', false);
   var vol = clamp(store.get('bgmVol', 100) / 100, 0, 1);
   var current = null;
   var ducked = false;
 
+  /* Route the media element through a GainNode. iOS ignores writes to
+     HTMLMediaElement.volume, so the mixer slider only works this way. */
   function audio(){
     if(el) return el;
     el = new Audio();
     el.loop = true;
     el.preload = 'auto';
-    el.volume = 0;
+    el.volume = 1;
+
+    var AC = window.AudioContext || window.webkitAudioContext;
+    /* A file:// media element can be treated as cross-origin by some
+       browsers, which makes MediaElementSource output silence. Keep the
+       plain element volume there; HTTP(S) pages use the gain graph. */
+    if(AC && window.location.protocol !== 'file:'){
+      try {
+        ctx = new AC({ latencyHint: 'interactive' });
+        source = ctx.createMediaElementSource(el);
+        gain = ctx.createGain();
+        gain.gain.value = targetVol();
+        source.connect(gain);
+        gain.connect(ctx.destination);
+      } catch(e){
+        ctx = null; gain = null; source = null;
+        try { el.volume = targetVol(); } catch(err){}
+      }
+    }
     return el;
   }
 
@@ -1486,14 +1521,28 @@ var Bgm = (function(){
     return ducked ? base * .33 : base;
   }
 
+  function unlock(){
+    if(ctx && ctx.state === 'suspended') ctx.resume().catch(function(){});
+  }
+
   function apply(){
-    try { audio().volume = targetVol(); } catch(e){}
+    if(gain && ctx){
+      var t = ctx.currentTime;
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(gain.gain.value, t);
+      gain.gain.linearRampToValueAtTime(targetVol(), t + .04);
+      return;
+    }
+    if(el){
+      try { el.volume = targetVol(); } catch(e){}
+    }
   }
 
   function play(track){
     var data = window.__BGM_DATA && window.__BGM_DATA[track];
     if(!data) return;
     var a = audio();
+    unlock();
     if(current !== track){
       current = track;
       try { a.src = data; a.load(); } catch(e){}
@@ -1512,6 +1561,7 @@ var Bgm = (function(){
     if(muted){
       a.pause();
     } else if(current){
+      unlock();
       var p = a.play();
       if(p && p.catch) p.catch(function(){});
     }
@@ -1528,6 +1578,7 @@ var Bgm = (function(){
     pause: function(){ if(el) el.pause(); },
     resume: function(){
       if(el && !muted && current){
+        unlock();
         var p = el.play();
         if(p && p.catch) p.catch(function(){});
       }
