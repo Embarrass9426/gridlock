@@ -1,6 +1,3 @@
-# Generated portable build (node tools/build-standalone.mjs)
-/gridlock.html
-
 # Source audio sits at the root; the copies the site uses live in assets/music
 /*.mp3
 

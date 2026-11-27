@@ -1,4 +1,4 @@
-# Keep the shipped HTML byte-identical: no CRLF normalisation anywhere.
+# Keep the HTML source as authored: no CRLF normalisation.
 *.html   -text
 *.mp3    binary
 *.woff2  binary
