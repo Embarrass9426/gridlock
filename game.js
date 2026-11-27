@@ -1045,7 +1045,6 @@ var cells = [];
 var DRIFT_MOVE_MIN = 5000;
 var DRIFT_MOVE_MAX = 10000;
 var DRIFT_TIME_SEGS = 30;
-var DRIFT_SIGNAL_SEGS = 10;
 var driftClock = {
   running: false,
   paused: false,
@@ -1054,6 +1053,7 @@ var driftClock = {
   nextMoveAt: 0,
   timeLeft: 0,
   resultTimeLeft: 0,
+  signalCells: 0,
   pausedAt: 0,
   pauses: {},
   token: 0,
@@ -1095,16 +1095,22 @@ function driftMoveDelay(){
 
 function buildDriftMeter(){
   if(!driftTimeTrack || driftTimeTrack.childElementCount) return;
-  var i;
-  for(i = 0; i < DRIFT_TIME_SEGS; i++){
+  for(var i = 0; i < DRIFT_TIME_SEGS; i++){
     var s = document.createElement('i');
     s.className = 'drift-seg';
     driftTimeTrack.appendChild(s);
   }
-  for(i = 0; i < DRIFT_SIGNAL_SEGS; i++){
-    var q = document.createElement('i');
-    q.className = 'drift-seg';
-    driftSignalTrack.appendChild(q);
+}
+
+function buildDriftSignal(seconds){
+  var total = Math.max(1, Math.min(10, Math.ceil(seconds)));
+  if(driftClock.signalCells === total && driftSignalTrack.childElementCount === total) return;
+  driftClock.signalCells = total;
+  driftSignalTrack.innerHTML = '';
+  for(var i = 0; i < total; i++){
+    var s = document.createElement('i');
+    s.className = 'drift-seg';
+    driftSignalTrack.appendChild(s);
   }
 }
 
@@ -1129,10 +1135,12 @@ function renderDriftClock(ms){
 
 function renderDriftSignal(now){
   if(!driftSignalTrack) return;
+  var total = driftSignalTrack.childElementCount;
+  if(!total) return;
   var span = Math.max(1, driftClock.nextMoveAt - driftClock.lastMoveAt);
   var remain = Math.max(0, driftClock.nextMoveAt - now);
   var frac = Math.max(0, Math.min(1, 1 - remain / span));
-  setDriftSegments(driftSignalTrack, Math.ceil(frac * DRIFT_SIGNAL_SEGS));
+  setDriftSegments(driftSignalTrack, Math.ceil(frac * total));
   var incoming = remain <= 3000;
   driftSignalTrack.classList.toggle('danger', incoming);
   driftMeter.classList.toggle('incoming', incoming);
@@ -1175,8 +1183,10 @@ function moveDriftGhost(now){
   driftTeleport();
   refreshDriftReadings();
   driftClock.lastMoveAt = now;
-  driftClock.nextMoveAt = now + driftMoveDelay();
+  var nextDelay = driftMoveDelay();
+  driftClock.nextMoveAt = now + nextDelay;
   driftClock.warned = false;
+  buildDriftSignal(nextDelay / 1000);
   renderDriftSignal(now);
   Sfx.drift();
   announce(t('annDrift'));
@@ -1192,9 +1202,10 @@ function startDriftClock(){
   driftClock.paused = false;
   driftClock.token++;
   var now = Date.now();
+  var firstDelay = driftMoveDelay();
   driftClock.deadline = now + MODES[DRIFT_ID].time * 1000;
   driftClock.lastMoveAt = now;
-  driftClock.nextMoveAt = now + driftMoveDelay();
+  driftClock.nextMoveAt = now + firstDelay;
   driftClock.timeLeft = MODES[DRIFT_ID].time * 1000;
   driftClock.resultTimeLeft = 0;
   driftClock.pausedAt = 0;
@@ -1202,6 +1213,7 @@ function startDriftClock(){
   driftClock.warned = false;
   driftMeter.hidden = false;
   driftMeter.classList.remove('danger', 'incoming', 'moved');
+  buildDriftSignal(firstDelay / 1000);
   renderDriftClock(driftClock.timeLeft);
   renderDriftSignal(now);
   driftTick(driftClock.token);
