@@ -115,7 +115,7 @@ var I18N = {
     driftEyebrow: 'THE LATTICE IS BREAKING',
     driftEyebrowRetry: 'THE DRIFTER RETURNS',
     driftTitle: 'DRIFT',
-    driftRule: 'IT MOVES EVERY 5–10 SECONDS',
+    driftRule: 'IT MOVES EVERY 3–6 SECONDS',
     driftUnlocked: 'SIGNAL UNLOCKED',
     driftStory:
       'Before the first map, there was the Lattice.\n' +
@@ -123,7 +123,7 @@ var I18N = {
       'They called it the Drifter.\n' +
       'It has no body. Only a distance.\n\n' +
       'Last night, the ninth seal broke.\n' +
-      'Every 5 to 10 seconds, it tears itself to another cell.\n\n' +
+      'Every 3 to 6 seconds, it tears itself to another cell.\n\n' +
       'The old kingdom is going dark, one city at a time.\n' +
       'You are the last hunter of the Lattice.\n' +
       'Read the distances. Corner the ghost.\n' +
@@ -131,7 +131,7 @@ var I18N = {
       'Do not let it leave the grid.',
     driftSkip: 'CLICK TO SKIP',
     driftBegin: 'CLICK TO BEGIN',
-    driftHow: 'The Drifter moves every 5 to 10 seconds. Every reading updates. For the first three rounds it never comes within one step of a probe. You have 90 seconds and 10 tries. Press Enter to begin.',
+    driftHow: 'The Drifter moves every 3 to 6 seconds. Every reading updates. For the first three rounds it never comes within one step of a probe. You have 90 seconds and 10 tries. Press Enter to begin.',
     driftSoon: 'The Drifter is about to move.',
     timeLabel: 'TIME',
     driftLabel: 'DRIFT',
@@ -207,7 +207,7 @@ var I18N = {
     driftEyebrow: '方格牢籠正在崩解',
     driftEyebrowRetry: '漂移者歸來',
     driftTitle: '漂移',
-    driftRule: '每隔 5–10 秒移動',
+    driftRule: '每隔 3–6 秒移動',
     driftUnlocked: '訊號解鎖',
     driftStory:
       '在第一張地圖之前，方格牢籠就已存在。\n' +
@@ -215,7 +215,7 @@ var I18N = {
       '他們叫它「漂移者」。\n' +
       '它沒有形體，只有一段距離。\n\n' +
       '昨夜，第九道封印裂開了。\n' +
-      '每隔 5 到 10 秒，它就會撕開空間，滑到另一格。\n\n' +
+      '每隔 3 到 6 秒，它就會撕開空間，滑到另一格。\n\n' +
       '古老的王國正一座座陷入黑暗。\n' +
       '你是方格牢籠最後的獵人。\n' +
       '讀出距離。困住鬼魂。\n' +
@@ -223,7 +223,7 @@ var I18N = {
       '別讓它離開方格。',
     driftSkip: '點擊跳過',
     driftBegin: '點擊開始',
-    driftHow: '漂移者每隔 5 到 10 秒移動一次。每次移動，所有讀數都會更新。前三次猜測期間，牠不會靠近你的探測位置一步之內。你有 90 秒和 10 次機會。按 Enter 開始。',
+    driftHow: '漂移者每隔 3 到 6 秒移動一次。每次移動，所有讀數都會更新。前三次猜測期間，牠不會靠近你的探測位置一步之內。你有 90 秒和 10 次機會。按 Enter 開始。',
     driftSoon: '漂移者即將移動。',
     timeLabel: '時間',
     driftLabel: '漂移',
@@ -1042,8 +1042,8 @@ var state = {
 };
 var cells = [];
 
-var DRIFT_MOVE_MIN = 5;
-var DRIFT_MOVE_MAX = 10;
+var DRIFT_MOVE_MIN = 3;
+var DRIFT_MOVE_MAX = 6;
 var DRIFT_SAFE_ROUNDS = 3;
 var DRIFT_TIME_SEGS = 30;
 var driftClock = {
