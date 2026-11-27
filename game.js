@@ -131,7 +131,7 @@ var I18N = {
       'Do not let it leave the grid.',
     driftSkip: 'CLICK TO SKIP',
     driftBegin: 'CLICK TO BEGIN',
-    driftHow: 'The Drifter moves every 5 to 10 seconds. Every reading updates. You have 90 seconds and 10 tries. Press Enter to begin.',
+    driftHow: 'The Drifter moves every 5 to 10 seconds. Every reading updates. For the first three rounds it never comes within one step of a probe. You have 90 seconds and 10 tries. Press Enter to begin.',
     driftSoon: 'The Drifter is about to move.',
     timeLabel: 'TIME',
     driftLabel: 'DRIFT',
@@ -223,7 +223,7 @@ var I18N = {
       '別讓它離開方格。',
     driftSkip: '點擊跳過',
     driftBegin: '點擊開始',
-    driftHow: '漂移者每隔 5 到 10 秒移動一次。每次移動，所有讀數都會更新。你有 90 秒和 10 次機會。按 Enter 開始。',
+    driftHow: '漂移者每隔 5 到 10 秒移動一次。每次移動，所有讀數都會更新。前三次猜測期間，牠不會靠近你的探測位置一步之內。你有 90 秒和 10 次機會。按 Enter 開始。',
     driftSoon: '漂移者即將移動。',
     timeLabel: '時間',
     driftLabel: '漂移',
@@ -1044,6 +1044,7 @@ var cells = [];
 
 var DRIFT_MOVE_MIN = 5;
 var DRIFT_MOVE_MAX = 10;
+var DRIFT_SAFE_ROUNDS = 3;
 var DRIFT_TIME_SEGS = 30;
 var driftClock = {
   running: false,
@@ -1844,53 +1845,16 @@ function reject(x, y){
 /* ============================================================
    12. guess resolution
    ============================================================ */
-function pickDriftDestination(options){
-  if(!options.length) return null;
-  var keys = Object.keys(state.revealed);
-  if(!keys.length) return options[randInt(options.length)];
-
-  var bestScore = -1, bestSum = -1, best = [];
-  for(var i = 0; i < options.length; i++){
-    var p = options[i];
-    var minD = Infinity, sumD = 0;
-    for(var j = 0; j < keys.length; j++){
-      var parts = keys[j].split(',');
-      var gx = +parts[0], gy = +parts[1];
-      var d = Math.abs(p.x - gx) + Math.abs(p.y - gy);
-      if(d < minD) minD = d;
-      sumD += d;
-    }
-    if(minD > bestScore || (minD === bestScore && sumD > bestSum)){
-      bestScore = minD;
-      bestSum = sumD;
-      best = [p];
-    } else if(minD === bestScore && sumD === bestSum){
-      best.push(p);
-    }
-  }
-
-  var anchor = best[randInt(best.length)];
-  var size = 5, half = 2;
-  var x0 = Math.max(0, Math.min(anchor.x - half, state.cols - size));
-  var y0 = Math.max(0, Math.min(anchor.y - half, state.rows - size));
-  var x1 = Math.min(state.cols - 1, x0 + size - 1);
-  var y1 = Math.min(state.rows - 1, y0 + size - 1);
-  var box = [];
-  for(var k = 0; k < options.length; k++){
-    var q = options[k];
-    if(q.x >= x0 && q.x <= x1 && q.y >= y0 && q.y <= y1) box.push(q);
-  }
-  return box.length ? box[randInt(box.length)] : anchor;
-}
-
 function driftTeleport(){
+  var guarded = state.history.length < DRIFT_SAFE_ROUNDS;
   var blocked = {};
   Object.keys(state.revealed).forEach(function(k){
     var p = k.split(',');
     var gx = +p[0], gy = +p[1];
+    blocked[key(gx, gy)] = 1;
+    if(!guarded) return;
     for(var oy = -1; oy <= 1; oy++){
       for(var ox = -1; ox <= 1; ox++){
-        if(Math.abs(ox) + Math.abs(oy) > 1) continue;
         var nx = gx + ox, ny = gy + oy;
         if(nx >= 0 && nx < state.cols && ny >= 0 && ny < state.rows){
           blocked[key(nx, ny)] = 1;
@@ -1931,7 +1895,7 @@ function driftTeleport(){
     if(changed.length) options = changed;
   }
 
-  var pick = pickDriftDestination(options);
+  var pick = options.length ? options[randInt(options.length)] : null;
   if(pick){
     state.target = { x: pick.x, y: pick.y };
   }
